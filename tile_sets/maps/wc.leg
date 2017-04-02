@@ -1,0 +1,14 @@
+[walls]
+default=1
+alternate1=2
+alternate2=3
+
+[ground]
+default=4
+alternate1=5
+alternate2=6
+unused=7
+
+[water]
+default=8
+sparkle=9
