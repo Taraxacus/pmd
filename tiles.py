@@ -168,7 +168,11 @@ class Level():
             raw_floor_xy_dir[name][0]+=9
         floor_xy_dir = {("."+name):(OFFSET[0] + (TILE_SIZE+1) * raw_floor_xy_dir[name][0], OFFSET[1] + (TILE_SIZE+1) * raw_floor_xy_dir[name][1]) for name in vicinity_names}
 
-        xy_dir = {**wall_xy_dir, **water_xy_dir, **floor_xy_dir}
+        #xy_dir = {**wall_xy_dir, **water_xy_dir, **floor_xy_dir}
+        xy_dir = {}
+        xy_dir.update(wall_xy_dir)
+        xy_dir.update(water_xy_dir)
+        xy_dir.update(floor_xy_dir)
         #print(xy_dir)
 
         #print(raw_xy_dir)
