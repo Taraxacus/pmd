@@ -1,0 +1,11 @@
+[walls]
+default=1
+alternate1=2
+alternate2=3
+
+[ground]
+default=5
+alternate1=6
+
+[water]
+default=7
