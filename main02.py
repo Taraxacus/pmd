@@ -5,6 +5,7 @@
 import os
 import configparser
 import random
+import easygui
 
 import pygame
 
@@ -23,6 +24,8 @@ FOLDERS = {"LEVELS":"levels",
 constants = configparser.ConfigParser()
 constants.read("constants/constants.ini")
 VICINITY_MASKS = {option:constants["masks"][option].split() for option in constants.options("masks")}
+SCREEN_SIZE = tuple([constants["info"].getint("screen_size_" + i) for i in "xy"])
+BORDER = tuple([constants["info"].getint("border_" + i) for i in "xy"])
 del constants
 DIRECTIONS = "wasd"
 TILE_CODES = {"X0":("walls", "default"),
@@ -66,7 +69,8 @@ def ask_for_file(directory,extension,question, name_only=False):
     # Ask for option until a valid option is given
     options.sort()
     while True:
-        option = input(question+" ("+", ".join(options)+") ")
+        #option = input(question+" ("+", ".join(options)+") ")
+        option = easygui.choicebox(question, "User input", options)
         if option in options:
             break
         print("Not a valid choice!")
@@ -167,7 +171,7 @@ class Level():
         # Load map
         self.map = parser.get("level", "map").split("\n")
         self.width = len(self.map[0])
-        self.height = len(self.map[1])
+        self.height = len(self.map)
         self.default_tile = parser.get("level","default_tile")
 
         self.player_position = [int(parser.get("player",i)) for i in "xy"]
@@ -176,18 +180,18 @@ class Level():
             question = "Which tile set would you like to use?" 
             self.tile_set = ask_for_file(FOLDERS["MAPS"], ".png", question, True)
         self.variation = [[random.randint(0,VARIATION_GGT-1)
-            for j in range(self.height)] for i in range(self.width)]
+            for j in range(self.height + 2 * BORDER[1])] for i in range(self.width + 2 * BORDER[1])]
         # Loads tile set from file
         self.legend = configparser.ConfigParser()
         self.legend.read([FOLDERS["MAPS"] + "/{0}.leg".format(name) for name in ["default", self.tile_set]])
-        size_x = self.legend["info"].getint("size_x")
-        size_y = self.legend["info"].getint("size_y")
-        self.tile_size = (size_x, size_y)
-        self.dimensions = (self.width * size_x,  self.height * size_y)
+        tile_size_x = self.legend["info"].getint("size_x")
+        tile_size_y = self.legend["info"].getint("size_y")
+        self.tile_size = (tile_size_x, tile_size_y)
+        self.dimensions = (self.width * tile_size_x,  self.height * tile_size_y)
 
     def get_tile_type(self, x, y):
         """ Gets type of the tile at ('x', 'y')."""
-        if not (0<=x<self.width and 0<=y<self.height):
+        if not ((0 <= x < self.width) and (0 <= y < self.height)):
             char = self.default_tile
         else:
             try:
@@ -196,9 +200,22 @@ class Level():
                 char = self.default_tile
         return char
 
+    def get_tile_variation(self, x, y):
+        """ Gets type of the tile at ('x', 'y')."""
+        #if not (0<=x<self.width  + 2 * BORDER[1] and 0<=y<self.height + 2 * BORDER[1]):
+        if not ((-BORDER[0] <= x <= self.width + BORDER[0])
+                and (-BORDER[1] <= y <= self.height + BORDER[1])):
+            var = 0
+        else:
+            try:
+                var = self.variation[x - BORDER[0]][y - BORDER[1]]
+            except IndexError:
+                var = 0
+        return var
+
     def get_tile_type_variant(self, x, y):
         tile_type = self.get_tile_type(x, y)
-        variation = self.variation[x][y] % TILE_VARIATION_NUMBER[tile_type]
+        variation = self.get_tile_variation(x, y)  % TILE_VARIATION_NUMBER[tile_type]
         return tile_type + str(variation)
 
     def get_tile_vicinity(self, x, y):
@@ -227,11 +244,14 @@ class Level():
 
         # Create PyGame surface and blit tiles on it
         #print(self.width * tile_size[0], self.height * tile_size[1])
-        image = pygame.Surface((self.width * self.tile_size[0], self.height * self.tile_size[1]))
-        for y in range(self.height):
-            for x in range(self.width):
+        size_x = (self.width + 2 * BORDER[0]) * self.tile_size[0]
+        size_y = (self.height + 2 * BORDER[1]) * self.tile_size[1]
+        image = pygame.Surface((size_x, size_y))
+        for y in range(-BORDER[1], self.height + BORDER[1]):
+            for x in range(-BORDER[0], self.width + BORDER[0]):
                 tile = self.tile_directory[self.get_tile_code(x, y)]
-                image.blit(tile, (x * self.tile_size[0], y * self.tile_size[1])) #, tile_size, tile_size))
+                image.blit(tile, ((x + BORDER[0]) * self.tile_size[0],
+                    (y + BORDER[1]) * self.tile_size[1])) #, tile_size, tile_size))
         return image
 
 def run():
@@ -258,7 +278,9 @@ def main():
     level.load_file(level_file)
 
     # Initialize screen
-    screen = pygame.display.set_mode(level.dimensions)
+    #screen = pygame.display.set_mode(SCREEN_SIZE)
+    screen = pygame.display.set_mode((1000,700))
+    #screen = pygame.display.set_mode(level.dimensions)
     screen.fill((128,128,128))
 
     # Draw on screen

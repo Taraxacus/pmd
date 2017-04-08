@@ -1,0 +1,46 @@
+[info]
+offset_x = 0
+offset_y = 0
+size_x = 40
+size_y = 40
+margin_x = 0
+margin_y = 0
+
+[breloom]
+# [286]
+default_x = 21
+default_y = 23
+happy_x = 22
+happy_y = 23
+sad_x = 23
+sad_y = 23
+laughing_x = 24
+laughing_y = 23
+inawe_x = 25
+inawe_y = 23
+shocked_x = 26
+shocked_y = 23
+
+[mawile]
+# [303]
+default_x = 16
+default_y = 25
+happy_x = 17
+happy_y = 25
+angry_x = 18
+angry_y = 25
+sad_x = 19
+sad_y = 25
+inawe_x = 20
+inawe_y = 25
+shocked_x = 21
+shocked_y = 25
+# inawe2_x = 22
+# inawe2_y = 25
+
+[groudon]
+# [383]
+default_x = 1
+default_y = 30
+alternate_x = 2
+alternate_y = 30
