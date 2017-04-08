@@ -1,10 +1,10 @@
 # pmd - Experimenting with PyGame by trying to clone Pokémon Mystery Dungeon
 
-Currently, `main01.py` (formerly `tiles.py`)is able to display a custom map
+Currently, `main01.py` (formerly `tiles.py`) is able to display a custom map
 using a custom tileset. A player can be placed on the map with a custom avatar.
 However the "player" can't actually _play_.
 
-The programm `main02.py` is a rewritten version of `main03.py` that is aimed
+The programm `main02.py` is a rewritten version of `main01.py` that is aimed
 at more general tilesheets. It will do roughtly the same as `main01.py`
 except for showing the inactive player but will try to read the LEG file of
 the given tile sheet PNG. The LEG file gives more exact information on where
@@ -22,7 +22,7 @@ download them or clone them using git. You need:
 * Python 3.5 or higher
 * The Python modules `pygame` and `easygui`
 
-***On the Python version: Some of the syntax used here require at least Python
+On the Python version: Some of the syntax used here require at least Python
 3.5.
 
 ### Installing the Python modules
@@ -35,7 +35,7 @@ similar considerations for the working directory.
 
 You may have to use the commands `python3` and `pip3` instead of `python` and
 `pip`! To check which version of Python `python` refers to, run
-`python --verions` on both Windows and Linux.
+`python --version` on both Windows and Linux.
 
 Alternatively you can install the packages manually. Go to their websites
 ([PyGame](http://www.pygame.org/news), and

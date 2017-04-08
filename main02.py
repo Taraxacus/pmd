@@ -5,6 +5,7 @@
 import os
 import configparser
 import random
+
 import easygui
 
 import pygame
@@ -254,16 +255,53 @@ class Level():
                     (y + BORDER[1]) * self.tile_size[1])) #, tile_size, tile_size))
         return image
 
-def run():
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                key = event.key
-                if event.key == pygame.K_q:
-                    running = False
+class MySprite(pygame.sprite.Sprite):
+    def __init__(self, position=(0, 0), frames=None, rate=6):
+        super().__init__()
+        self.frames = frames
+        self.image = frames[0]
+        self.rect = self.image.get_rect()
+        self.position = position
+        self.rate = rate
+        self.animation = self.stand_animation()
+
+    def stand_animation(self):
+        while True:
+            for frame in self.frames:
+                for i in range(rate):
+                    self.image = frame
+                    yield
+
+    def update(self):
+        self.animation.next()
+
+class Player():
+    def __init__(self, level):
+        self.level = level
+        self.x, self.y = tuple(level.player_position)
+
+    def load_file(self, filename):
+        parser = configparser.ConfigParser()
+        parser.read(filename)
+        self.tile_position = {0:[parser["tiles"].getint(i) for i in "xy"]}
+        self.tile_set_name = parser.get("tiles", "tile_set")
+
+    def render(self):
+        file_name = FOLDERS["AVATARS"] + "/{0}.png".format(self.tile_set_name)
+        self.image = load_tile_file(file_name, self.tile_position, (24, 24), (0,128,128))[0]
+        return self.image
+
+    def walk(self, direction):
+        if direction.lower() == "w":
+            self.y -= 1
+        elif direction.lower() == "a":
+            self.x -= 1
+        elif direction.lower() == "s":
+            self.y += 1
+        elif direction.lower() == "d":
+            self.x += 1
+        else:
+            print("Attempting to walk in invalid direction. Standing still!")
 
 def main():
     # Initialize PyGame
@@ -277,18 +315,47 @@ def main():
     level = Level()
     level.load_file(level_file)
 
+    # Initialize player
+    player = Player(level)
+    player.load_file("players/treecko.ini")
+
     # Initialize screen
-    #screen = pygame.display.set_mode(SCREEN_SIZE)
-    screen = pygame.display.set_mode((1000,700))
+    screen = pygame.display.set_mode(SCREEN_SIZE)
+    #screen = pygame.display.set_mode((1000,700))
     #screen = pygame.display.set_mode(level.dimensions)
     screen.fill((128,128,128))
 
     # Draw on screen
     background = level.render()
+    avatar = player.render()
     screen.blit(background, (0, 0))
     pygame.display.flip()
 
-    run()
+    # Running...
+    running = True
+    clock = pygame.time.Clock()
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                key = event.key
+                if key == pygame.K_q:
+                    running = False
+                elif key == pygame.K_w:
+                    player.walk("w")
+                elif key == pygame.K_w:
+                    player.walk("w")
+                elif key == pygame.K_a:
+                    player.walk("a")
+                elif key == pygame.K_s:
+                    player.walk("s")
+                elif key == pygame.K_d:
+                    player.walk("d")
+        screen.blit(background, (-24*player.x+128-12, -24*player.y+96-12))
+        screen.blit(avatar, (128-12, 96-12))
+        pygame.display.flip()
+        clock.tick(24)
 
     print("Quitting...")
     pygame.quit()
