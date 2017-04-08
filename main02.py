@@ -6,7 +6,11 @@ import os
 import configparser
 import random
 
-import easygui
+USING_GUI = True
+try:
+    import easygui
+except ImportError:
+    USING_GUI = False
 
 import pygame
 
@@ -70,8 +74,10 @@ def ask_for_file(directory,extension,question, name_only=False):
     # Ask for option until a valid option is given
     options.sort()
     while True:
-        #option = input(question+" ("+", ".join(options)+") ")
-        option = easygui.choicebox(question, "User input", options)
+        if USING_GUI:
+            option = easygui.choicebox(question, "User input", options)
+        else:
+            option = input(question+" ("+", ".join(options)+") ")
         if option in options:
             break
         print("Not a valid choice!")
@@ -340,7 +346,7 @@ def main():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 key = event.key
-                if key == pygame.K_q:
+                if key == pygame.K_x:
                     running = False
                 elif key == pygame.K_w:
                     player.walk("w")

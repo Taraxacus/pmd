@@ -5,22 +5,24 @@ using a custom tileset. A player can be placed on the map with a custom avatar.
 However the "player" can't actually _play_.
 
 The programm `main02.py` is a rewritten version of `main01.py` that is aimed
-at more general tilesheets. It will do roughtly the same as `main01.py`
-except for showing the inactive player but will try to read the LEG file of
-the given tile sheet PNG. The LEG file gives more exact information on where
-the different tiles are located on the tile sheet. Internally Level.render
+at more general tilesheets. It will do roughly the same as `main01.py`.
+The legend files (LEG files) of the tile sheets will be used to locate
+the different tiles on the tile sheet. The player can now navigate the map
+but this isn't animated. Also, the player can currently walk through walls.
+
+Internally, Level.render
 now returns a PyGame surface instead of blitting the map directly onto the
 screen. Also, the code has been commented for better readability. Further
-commenting is planned.
+commenting is planned. The code around the player is still very provisional.
 
 ## Installation
 
 This programm was tested on Linux (Arch Linux at 2017-04-06) and Windows 7
 using Python 3.6.0. If you want to run these programms on your system, 
-download them or clone them using git. You need:
+download them or clone them using git. You need
 
-* Python 3.5 or higher
-* The Python modules `pygame` and `easygui`
+* Python 3.5 or higher and 
+* The Python modules `pygame` and, optionally, `easygui`
 
 On the Python version: Some of the syntax used here require at least Python
 3.5.
@@ -45,7 +47,7 @@ and follow the instructions given there.
 ## Introduction
 
 As of now, these programms are fairly useless. You can close the displayed
-window by pressing `Q`. Also, you can create new levels, by copying the syntax
+window by pressing `X`. Also, you can create new levels, by copying the syntax
 used in the INI files in the `levels` folder. Downloading additional tile
 sheets is also possible if you can figure out the syntax in the LEG files and
 create your own.
