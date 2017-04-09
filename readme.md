@@ -7,13 +7,15 @@ However the "player" can't actually _play_.
 The programm `main02.py` is a rewritten version of `main01.py` that is aimed
 at more general tilesheets. It will do roughly the same as `main01.py`.
 The legend files (LEG files) of the tile sheets will be used to locate
-the different tiles on the tile sheet. The player can now navigate the map
-but this isn't animated. Also, the player can currently walk through walls.
+the different tiles on the tile sheet. The player now has an animated sprite.
+They can walk through the level and cannot walk over walls. Also, they can
+enter the stairs by pressing `K`. Some music in the background adds to the
+flair.
 
-Internally, Level.render
-now returns a PyGame surface instead of blitting the map directly onto the
-screen. Also, the code has been commented for better readability. Further
-commenting is planned. The code around the player is still very provisional.
+; Internally, Level.render
+; now returns a PyGame surface instead of blitting the map directly onto the
+; screen. Also, the code has been commented for better readability. Further
+; commenting is planned. The code around the player is still very provisional.
 
 ## Installation
 
