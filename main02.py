@@ -6,7 +6,8 @@ import os
 import configparser
 import random
 
-USING_GUI = True
+#USING_GUI = True
+USING_GUI = False
 try:
     import easygui
 except ImportError:
@@ -266,7 +267,7 @@ class MySprite(pygame.sprite.Sprite):
         super().__init__()
         self.frames = frames
         self.image = frames[0]
-        self.rect = self.image.get_rect()
+        self.rect = pygame.Rect(128-12, 96-12, 24, 24)
         self.position = position
         self.rate = rate
         self.animation = self.stand_animation()
@@ -274,12 +275,12 @@ class MySprite(pygame.sprite.Sprite):
     def stand_animation(self):
         while True:
             for frame in self.frames:
-                for i in range(rate):
+                for i in range(self.rate):
                     self.image = frame
                     yield
 
     def update(self):
-        self.animation.next()
+        return next(self.animation)
 
 class Player():
     def __init__(self, level):
@@ -289,25 +290,56 @@ class Player():
     def load_file(self, filename):
         parser = configparser.ConfigParser()
         parser.read(filename)
-        self.tile_position = {0:[parser["tiles"].getint(i) for i in "xy"]}
-        self.tile_set_name = parser.get("tiles", "tile_set")
+        self.avatar_legend = configparser.ConfigParser()
+        avatar_name = parser.get("info", "avatar")
+        avatar_file_name = FOLDERS["AVATARS"] + "/{0}.leg".format(avatar_name)
+        print(avatar_file_name)
+        self.avatar_legend.read(avatar_file_name)
+        #self.tile_position = {0:[parser["tiles"].getint(i) for i in "xy"]}
+        #self.tile_set_name = parser.get("tiles", "tile_set")
 
     def render(self):
-        file_name = FOLDERS["AVATARS"] + "/{0}.png".format(self.tile_set_name)
-        self.image = load_tile_file(file_name, self.tile_position, (24, 24), (0,128,128))[0]
-        return self.image
+        #file_name = FOLDERS["AVATARS"] + "/{0}.png".format(self.tile_set_name)
+        #self.image = load_tile_file(file_name, self.tile_position, (24, 24), (0,128,128))[0]
+        #return self.image
+        tile_set_name = self.avatar_legend.get("info", "tile_set")
+        file_name = FOLDERS["AVATARS"] + "/{0}.png".format(tile_set_name)
+        n = self.avatar_legend["info"].getint("idle_frames_number")
+        position_dictionary = {i:[self.avatar_legend["idle"].getint(str(i) + j) for j in "xy"]
+                for i in range(n)}
+        size = [self.avatar_legend["info"].getint("size_" + i) for i in "xy"]
+        colorkey = [self.avatar_legend["info"].getint("colorkey_" + i) for i in "rgb"]
+        frame_dictionary = load_tile_file(file_name, position_dictionary, size, colorkey)
+        frames = [frame_dictionary[i] for i in range(n)]
+        rate = self.avatar_legend["info"].getint("idle_framerate")
+        self.idle_sprite = MySprite((128-12, 96-12), frames, rate)
+        return self.idle_sprite
 
     def walk(self, direction):
         if direction.lower() == "w":
-            self.y -= 1
+            #self.y -= 1
+            new_x = self.x
+            new_y = self.y - 1
         elif direction.lower() == "a":
-            self.x -= 1
+            #self.x -= 1
+            new_x = self.x - 1
+            new_y = self.y
         elif direction.lower() == "s":
-            self.y += 1
+            #self.y += 1
+            new_x = self.x
+            new_y = self.y + 1
         elif direction.lower() == "d":
-            self.x += 1
+            #self.x += 1
+            new_x = self.x + 1
+            new_y = self.y
         else:
             print("Attempting to walk in invalid direction. Standing still!")
+            new_x = self.x
+            new_y = self.y
+        if self.level.get_tile_type(new_x, new_y) == ".":
+            self.x = new_x
+            self.y = new_y
+        print(self.x, self.y)
 
 def main():
     # Initialize PyGame
@@ -323,7 +355,7 @@ def main():
 
     # Initialize player
     player = Player(level)
-    player.load_file("players/treecko.ini")
+    player.load_file("players/test01.ini")
 
     # Initialize screen
     screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -334,8 +366,10 @@ def main():
     # Draw on screen
     background = level.render()
     avatar = player.render()
-    screen.blit(background, (0, 0))
-    pygame.display.flip()
+    players = pygame.sprite.RenderUpdates()
+    players.add(avatar)
+    #screen.blit(background, (0, 0))
+    #pygame.display.flip()
 
     # Running...
     running = True
@@ -358,8 +392,13 @@ def main():
                     player.walk("s")
                 elif key == pygame.K_d:
                     player.walk("d")
-        screen.blit(background, (-24*player.x+128-12, -24*player.y+96-12))
-        screen.blit(avatar, (128-12, 96-12))
+        #screen.blit(avatar, (128-12, 96-12))
+        players.clear(screen, background)
+        players.update()
+        screen_position = (-24*(player.x + BORDER[0])+128-12, -24*(player.y + BORDER[1])+96-12)
+        screen.blit(background, screen_position)
+        dirty = players.draw(screen)
+        pygame.display.update(dirty)
         pygame.display.flip()
         clock.tick(24)
 

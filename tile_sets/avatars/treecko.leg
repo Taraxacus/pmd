@@ -1,0 +1,19 @@
+[info]
+tile_set = treecko_evolution
+idle_frames_number = 4
+idle_framerate = 6
+size_x = 24
+size_y = 24
+colorkey_r = 0
+colorkey_g = 128
+colorkey_b = 128
+
+[idle]
+0x = 78
+0y = 28
+1x = 78
+1y = 28
+2x = 78
+2y = 29
+3x = 78
+3y = 28
