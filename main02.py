@@ -52,6 +52,12 @@ SIMILAR = {"X":"X",
            ".":".o",
            "o":"o"}
 
+def transform(player, tile_size):
+    def coordinates(x, y):
+        return ((SCREEN_SIZE[0] - tile_size[0])//2 + tile_size[0] * (x - player.x),
+                (SCREEN_SIZE[1] - tile_size[1])//2 + tile_size[1] * (y - player.y))
+    return coordinates
+
 def ask_for_file(directory,extension,question, name_only=False):
     """Asks user via console to choose from all files in directory 'directory'
     with extension 'extension' using the prompt 'question'."""
@@ -183,6 +189,7 @@ class Level():
         self.default_tile = parser.get("level","default_tile")
 
         self.player_position = [int(parser.get("player",i)) for i in "xy"]
+        self.stairs_position = [int(parser.get("stairs",i)) for i in "xy"]
         self.tile_set = parser.get("level", "tile_set")
         if self.tile_set == "ask":
             question = "Which tile set would you like to use?" 
@@ -282,10 +289,16 @@ class MySprite(pygame.sprite.Sprite):
     def update(self):
         return next(self.animation)
 
+    def update_position(self, x, y):
+        self.rect = pygame.Rect(x, y, 24, 24)
+
 class Player():
     def __init__(self, level):
         self.level = level
         self.x, self.y = tuple(level.player_position)
+
+    #def screen_coordinates(self, x, y):
+        #return (116 + (x - self.x)*24, 84 + (y - self.y)*24)
 
     def load_file(self, filename):
         parser = configparser.ConfigParser()
@@ -341,9 +354,28 @@ class Player():
             self.y = new_y
         print(self.x, self.y)
 
+class Stairs():
+    def __init__(self, level):
+        self.level = level
+        self.x, self.y = level.stairs_position
+
+    def render(self):
+        file_name = "tile_sets/items_and_traps.png"
+        position_dictionary = {0:(13, 387)}
+        size = (24, 24)
+        colorkey = (0, 128, 128)
+        image = load_tile_file(file_name, position_dictionary, size, colorkey)[0]
+        self.sprite = MySprite((0,0), [image])
+        return self.sprite
+        
 def main():
     # Initialize PyGame
-    pygame.init()
+    #print("Initializing PyGame...")
+    print(pygame.init())
+    #print("PyGame initialized!")
+    #print("Initializing PyGame mixer...")
+    #print(pygame.mixer.init())
+    #print("PyGame mixer initialized!")
 
     # Get user input
     level_file = ask_for_file(FOLDERS["LEVELS"],".ini","Which level do you want to display?")
@@ -356,6 +388,10 @@ def main():
     # Initialize player
     player = Player(level)
     player.load_file("players/test01.ini")
+    coordinates = transform(player, level.tile_size)
+
+    # Initialize stairs
+    stairs = Stairs(level)
 
     # Initialize screen
     screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -366,10 +402,14 @@ def main():
     # Draw on screen
     background = level.render()
     avatar = player.render()
+    steps = stairs.render()
     players = pygame.sprite.RenderUpdates()
     players.add(avatar)
-    #screen.blit(background, (0, 0))
-    #pygame.display.flip()
+    stairs_and_traps = pygame.sprite.RenderUpdates()
+    stairs_and_traps.add(steps)
+
+    #pygame.mixer.music.load("sounds/031-cave-and-side-path.mp3")
+    #pygame.mixer.music.play(-1)
 
     # Running...
     running = True
@@ -384,21 +424,28 @@ def main():
                     running = False
                 elif key == pygame.K_w:
                     player.walk("w")
-                elif key == pygame.K_w:
-                    player.walk("w")
                 elif key == pygame.K_a:
                     player.walk("a")
                 elif key == pygame.K_s:
                     player.walk("s")
                 elif key == pygame.K_d:
                     player.walk("d")
+                elif key == pygame.K_k:
+                    if player.x == stairs.x and player.y == stairs.y:
+                        running = False
         #screen.blit(avatar, (128-12, 96-12))
         players.clear(screen, background)
         players.update()
-        screen_position = (-24*(player.x + BORDER[0])+128-12, -24*(player.y + BORDER[1])+96-12)
-        screen.blit(background, screen_position)
-        dirty = players.draw(screen)
-        pygame.display.update(dirty)
+        stairs_and_traps.clear(screen, background)
+        #steps.position = coordinates(*stairs.level.stairs_position)
+        steps.update_position(*coordinates(*stairs.level.stairs_position))
+        stairs_and_traps.update()
+        #screen_position = (-24*(player.x + BORDER[0])+128-12, -24*(player.y + BORDER[1])+96-12)
+        screen.blit(background, coordinates(-BORDER[0], -BORDER[1]))
+        dirty1 = stairs_and_traps.draw(screen)
+        dirty2 = players.draw(screen)
+        pygame.display.update(dirty1)
+        pygame.display.update(dirty2)
         pygame.display.flip()
         clock.tick(24)
 
